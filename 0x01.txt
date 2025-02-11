@@ -1,0 +1,141 @@
+In KIRIKIRI Z(XP3 package), first 3 bytes are 58 50 33(no matter its extentions). And XP3 can be intergrated in exe. If in details, you find TVP(KIRIKIRI) 2 core, then it is.
+Default entry script is in data.xp3. If not, then data.xp3 is bound with exe, or, the programme has assumed that it shall start from another script(usually xp3).
+wuvorbis.dll will be found in plugin. It offers ogg voice(video) decoding. Also, dll can be intergrated in any xp3.
+syugaten
+|   data.xp3 // main data
+|   data.xp3.sig // *.sig is for intergity verification
+|   evimage.xp3 // cg
+|   evimage.xp3.sig
+|   fgimage.xp3 // character drawn
+|   fgimage.xp3.sig
+|   syugaten.exe // main programme
+|   syugaten.exe.sig
+|   video.xp3 // video
+|   video.xp3.sig
+|   voice.xp3 // voice
+|   voice.xp3.sig
+|
+|   // possible xp3s
+|   // patch*.xp3----patches,* stands for numbers
+|   // scenario.xp3----content script 
+|   // bgimage.xp3----background
+|   // *.cf----this file designates the path of your savedata
+|
+\---plugin //possible dlls 
+        AlphaMovie.dll
+        AlphaMovie.dll.sig
+        extNagano.dll
+        extNagano.dll.sig
+        extrans.dll
+        extrans.dll.sig
+        getSample.dll
+        getSample.dll.sig
+        k2compat.dll
+        k2compat.dll.sig
+        kagexopt.dll
+        kagexopt.dll.sig
+        KAGParserEx.dll
+        KAGParserEx.dll.sig
+        krmovie.dll
+        krmovie.dll.sig
+        kztouch.dll
+        kztouch.dll.sig
+        layerExDraw.dll
+        layerExDraw.dll.sig
+        lzfs.dll
+        lzfs.dll.sig
+        menu.dll
+        menu.dll.sig
+        multiimage.dll
+        multiimage.dll.sig
+        PackinOne.dll
+        PackinOne.dll.sig
+        pkutil.dll
+        pkutil.dll.sig
+        psbfile.dll
+        psbfile.dll.sig
+        psd.dll
+        psd.dll.sig
+        textrender.dll
+        textrender.dll.sig
+        win32dialog.dll
+        win32dialog.dll.sig
+        win32ole.dll
+        win32ole.dll.sig
+        windowEx.dll
+        windowEx.dll.sig
+        wuopus.dll
+        wuopus.dll.sig
+        wuvorbis.dll
+        wuvorbis.dll.sig
+Prograss of starting:
+    Load plugins. Then use .tpm(often in plugin folder) to decrypt.
+    use data.xp3/startup.tjs to initialize.(the .tjs loads data.xp3/system/Initialize.tjs).
+    start game.
+Resource reading priority:
+    1. patch.xp3 has first priority. If a number follows with patch, then the larger one will override the less one(If they have a same resource).
+    2. data(folder) However, some games do not permit unpacked game data.
+    3. data.xp3
+Encoding:
+    Modify exe to make it able to show chs:
+        Search C6431780 in exe, C6431780->C6431786
+    .tjs，.ks，.scn，.csv，.txt，.ini，.func，.asd，.sinfo，.stand and so on. All these files require according change.
+    Switch its encoding to UTF-16 LE(If necassary), and keep the BOM header.
+    For .scn, unpack it, extract needed files and switch encoding. Pack back finally.
+Font:
+    Use krkrfont.exe to generate tft font.
+    Put font in data folder. It should in the same directory as startup.tjs.
+    Open scenario folder，in first.ks, add following:
+    [mappfont storage="XXX.tft"]
+    [font face="XX"]
+Other changes:
+    If there is a xp3dec.tpm, then GARBro died. First we are going to remove .sig and .cf(They have verifications.).
+    Usual method:
+        Extract data.xp3, try .ks .txt .tjs. They might have relevant script.
+        For example:
+        /*    チェックするファイル    */---- チェック means check
+    var    fn        =
+    [
+        System.exeName.substr( System.exePath.length ),        //    エンジン名
+        'data.xp3',                                            //data.xp3 check. patch.xp3 also has one.  
+        'patch.xp3'
+    ];
+    Delete it, or simply make them comment.
+
+    [iscript]
+    /*    cfファイルチェック    */
+    var    file    = ( Storages.chopStorageExt( System.exeName ) + ".cf" );
+    if( Storages.isExistentStorage( file ) != true )
+    {
+        System.inform( 'cfファイルがありません。終了します。' );
+        System.exit();
+    }
+    [endscript]
+    
+    This is .cf check
+    /data/scenario--dialogue text
+    /data/script/first.ks--title
+    data.xp3/system/Override.tjs--another possible title
+    /data/system/Menus.tjs--menu(or any other .ks .tjs)
+
+    Modify exe to make it able to show chs:
+        Search C6431780 in exe, C6431780->C6431786
+
+        If error, check release.ks, find 
+        function onCheckSignatureDone( handler, info, result, error )
+    {
+        message("署名確認結果 : " + handler + ":" + result + ":" + error );
+
+        if( result < 1 )
+        {
+            //System.inform( '認証エラー' + "\n\n" + "File : " + file + "\n" + "Result : " + result + "\n" + "Msg : " + error );
+            //System.exit();
+        }
+    }
+
+        Comment it, done.
+    
+    Forced unpack loading:
+        Hex exe, and search forcedata.xp3, 1->2
+        Also the same to disablemsgmap.
+        
